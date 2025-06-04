@@ -1,0 +1,92 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.21'
+    
+    - name: Build binaries
+      run: |
+        # Create output directory
+        mkdir -p dist
+        
+        # Build for all the platforms we care about
+        platforms=(
+          "linux/amd64"
+          "linux/arm64"
+          "linux/arm/7"
+          "darwin/amd64"
+          "darwin/arm64"
+          "windows/amd64"
+          "windows/arm64"
+        )
+        
+        for platform in "${platforms[@]}"; do
+          IFS='/' read -r os arch <<< "$platform"
+          
+          # Set output name
+          output="jupyter-terminal-${os}-${arch}"
+          if [ "$os" = "windows" ]; then
+            output="${output}.exe"
+          fi
+          
+          # Build it!
+          echo "Building $platform..."
+          GOOS=$os GOARCH=$arch go build -o "dist/${output}" -ldflags="-s -w" .
+          
+          # Compress it (except Windows, they get zip)
+          if [ "$os" = "windows" ]; then
+            (cd dist && zip "${output}.zip" "${output}")
+            rm "dist/${output}"
+          else
+            tar -czf "dist/${output}.tar.gz" -C dist "${output}"
+            rm "dist/${output}"
+          fi
+        done
+        
+        # Show what we built
+        ls -la dist/
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: dist/*
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+        body: |
+          ## Installation
+          
+          Download the binary for your platform and extract it:
+          
+          **Linux/macOS:**
+          ```bash
+          tar -xzf jupyter-terminal-linux-amd64.tar.gz
+          chmod +x jupyter-terminal-linux-amd64
+          ./jupyter-terminal-linux-amd64 -url http://localhost:8888
+          ```
+          
+          **Windows:**
+          ```powershell
+          # Extract the zip file
+          # Run: jupyter-terminal-windows-amd64.exe -url http://localhost:8888
+          ```
+          
+          ## What's in this release?
+          
+          Check out the automatically generated release notes below for all the changes!
