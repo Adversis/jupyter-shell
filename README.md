@@ -1,4 +1,4 @@
-# jupyter-terminal
+# jupyter-shell
 
 A little Go client that talks to Jupyter terminals over WebSocket. I wrote this because I needed to poke at Jupyter servers programmatically and got tired of using websocat with weird shell escaping.
 
@@ -10,14 +10,14 @@ It connects to a Jupyter server and gives you a terminal session, just like clic
 
 First grab the dependencies:
 ```bash
-go mod init jupyter-terminal
+go mod init jupyter-shell
 go get github.com/gorilla/websocket
-go build -o jupyter-terminal main.go
+go build -o jupyter-shell main.go
 ```
 
 Then connect to your Jupyter server:
 ```bash
-./jupyter-terminal -url http://localhost:8888
+./jupyter-shell -url http://localhost:8888
 ```
 
 That's it! You're now in a terminal on your Jupyter server.
@@ -26,22 +26,22 @@ That's it! You're now in a terminal on your Jupyter server.
 
 **Local development server (no auth):**
 ```bash
-./jupyter-terminal -url http://localhost:8888
+./jupyter-shell -url http://localhost:8888
 ```
 
 **Production server with a token:**
 ```bash
-./jupyter-terminal -url https://jupyter.company.com -token abc123def456
+./jupyter-shell -url https://jupyter.company.com -token abc123def456
 ```
 
 **Just run one command and bail:**
 ```bash
-./jupyter-terminal -url http://localhost:8888 whoami
+./jupyter-shell -url http://localhost:8888 whoami
 ```
 
 **Connect to a terminal you already created:**
 ```bash
-./jupyter-terminal -url http://localhost:8888 -term 1
+./jupyter-shell -url http://localhost:8888 -term 1
 ```
 
 ## How it actually works
